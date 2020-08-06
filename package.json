@@ -2,7 +2,8 @@
   "name": "passport-js-auth-webhook",
   "version": "1.0.0",
   "engines": {
-    "node": "8.9.1"
+    "node": "10.15.3",
+    "npm": "6.4.1"
   },
   "description": "A boilerplate for Hasura Graphql Engine auth webhook with passport js",
   "scripts": {
@@ -21,7 +22,7 @@
   },
   "homepage": "https://github.com/hasura/graphql-engine/tree/master/community/boilerplates/auth-webhooks/passport-js#readme",
   "dependencies": {
-    "bcrypt": "^3.0.0",
+    "bcrypt": "3.0.4",
     "body-parser": "^1.18.3",
     "chalk": "^2.4.1",
     "crypto": "^1.0.1",
