@@ -34,11 +34,6 @@ class User extends Model {
     this.token = createRandomToken
   }
 
-  async $beforeUpdate () {
-    const salt = bcrypt.genSaltSync();
-    this.password = await bcrypt.hash(this.password, salt)
-  }
-
   verifyPassword (password, callback) {
     bcrypt.compare(password, this.password, callback)
   };

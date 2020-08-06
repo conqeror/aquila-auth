@@ -37,7 +37,6 @@ app.use(passport.session());
 
 app.post('/login', userController.postLogin);
 app.post('/signup', userController.postSignup);
-app.post('/changePassword', userController.postChangePassword)
 app.get('/webhook', userController.getWebhook);
 
 /**
