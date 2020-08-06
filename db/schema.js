@@ -1,14 +1,14 @@
 const { promisify } = require('util');
 const Knex = require('knex');
-const connection = require('../knexfile');
+const {main_db} = require('../knexfile');
 const { Model } = require('objection');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
-const knexConnection = Knex(connection);
+const knexConnectionMain = Knex(main_db);
 const randomBytesAsync = promisify(crypto.randomBytes);
 
-Model.knex(knexConnection);
+Model.knex(knexConnectionMain);
 
 class User extends Model {
   static get tableName () {
