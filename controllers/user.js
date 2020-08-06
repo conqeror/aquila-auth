@@ -18,7 +18,9 @@ exports.postLogin = async (req, res, next) => {
   }
 
   passport.authenticate('local', (err, user, info) => {
-    if (err) { return handleResponse(res, 400, {'error': err})}
+    if (err) {
+      return handleResponse(res, 400, {'error': err})
+    }
     if (user) {
       handleResponse(res, 200, user.getUser());
     }
@@ -58,6 +60,38 @@ exports.postSignup = async (req, res, next) => {
       handleResponse(res, 200, user.getUser());
     }
   })(req, res, next);
+};
+
+exports.postChangePassword = async (req, res, next) => {
+  req.assert('username', 'Username is not valid').notEmpty();
+  req.assert('password', 'Password must be at least 4 characters long').len(4);
+  req.assert('newPassword', 'Password must be at least 4 characters long').len(4);
+
+  const errors = req.validationErrors();
+
+  if (errors) {
+    return res.status(400).json({'errors': errors});
+  }
+
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {  return handleResponse(res, 400, {'error': err})}
+    if (!user) {
+      handleResponse(res, 400, {'error': 'no user'});
+    }
+  })(req, res, next);
+
+  try {
+    const user = await User.query()
+                           .patch({
+                             password: req.body.newPassword
+                           })
+                           .where('username', req.body.username)
+  } catch (err) {
+    errorHandler(err, res);
+    return;
+  }
+  
+  res.status(200).json({success: true});
 };
 
 exports.getWebhook = async (req, res, next) => {
