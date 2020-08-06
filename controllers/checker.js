@@ -49,7 +49,6 @@ exports.trySolve = async (req, res, next) => {
           .then((result) => {
             res.status(200).json({
               status: "OK",
-              result,
             });
           })
           .catch((e) => {
@@ -59,7 +58,7 @@ exports.trySolve = async (req, res, next) => {
         
       } else {
         res.status(200).json({
-          status: "FAIL",
+          error: "Wrong solution!",
         })
       }
     }
@@ -112,7 +111,6 @@ exports.takeHint = async (req, res, next) => {
           .then((result) => {
             res.status(200).json({
               status: "OK",
-              result,
             });
           })
           .catch((e) => {
@@ -154,7 +152,7 @@ exports.takeSolution = async(req, res, next) => {
       const currentCipher = ciphers.find((cipher) => cipher['cipher_number'] === currentCipherNumber)
       if (new Date().valueOf() < Number(team['next_solution_time'])) {
         res.status(200).json({
-          message: 'Too early!'
+          error: 'Too early!'
         });
       } else {
         knex
@@ -169,7 +167,6 @@ exports.takeSolution = async(req, res, next) => {
           .then((result) => {
             res.status(200).json({
               status: "OK",
-              result,
             });
           })
           .catch((e) => {
@@ -231,7 +228,6 @@ exports.arrive = async (req, res, next) => {
         .then((result) => {
           res.status(200).json({
             status: "OK",
-            result,
           });
         })
         .catch((e) => {
