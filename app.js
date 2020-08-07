@@ -18,6 +18,7 @@ dotenv.load({ path: '.env.example' });
  * Controllers (route handlers).
  */
 const userController = require('./controllers/user');
+const checkerController = require('./controllers/checker');
 
 /**
  * Create Express server.
@@ -39,6 +40,10 @@ app.post('/login', userController.postLogin);
 app.post('/signup', userController.postSignup);
 app.post('/changePassword', userController.postChangePassword)
 app.get('/webhook', userController.getWebhook);
+app.post('/checker/trySolve', checkerController.trySolve);
+app.post('/checker/takeHint', checkerController.takeHint);
+app.post('/checker/takeSolution', checkerController.takeSolution);
+app.post('/checker/arrive', checkerController.arrive);
 
 /**
  * Start Express server.

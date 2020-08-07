@@ -3,12 +3,18 @@
 const databaseName = "postgres";
 const pg = require('pg');
 
-const connection_url = process.env.DATABASE_URL || `postgres://postgres:@localhost:5432/${databaseName}`;
+require('dotenv').config()
 
-module.exports = {
+
+exports.main_db = {
   client: 'pg',
-  connection: connection_url,
+  connection: `${process.env.DATABASE_URL}?ssl=true`,
   migrations: {
     directory: __dirname + '/db/migrations'
-  }
+  },
 };
+
+exports.api_db = {
+  client: 'pg',
+  connection: `${process.env.HEROKU_POSTGRESQL_ROSE_URL}?ssl=true`,
+}
