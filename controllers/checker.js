@@ -6,11 +6,11 @@ console.log(api_db);
 const knex = Knex(api_db);
 
 exports.trySolve = async (req, res, next) => {
-  const {solution} = req.body;
-  const teamId = req.headers['x-hasura-user-id'];
+  const solution = req.body['input']['solution'];
+  const teamId = req.body['session_variables']['x-hasura-user-id'];
   if (!teamId) {
     res.status(403).json({
-      error: 'No user id supplied in headers'
+      message: 'No user id supplied in headers'
     });
   }
   Promise.all([
@@ -28,7 +28,7 @@ exports.trySolve = async (req, res, next) => {
     ([team, ciphers]) => {
       if (!team) {
         res.status(403).json({
-          error: 'Wrong user id'
+          message: 'Wrong user id'
         });
       }
       const currentCipherNumber = team['current_cipher_number'];
@@ -53,7 +53,7 @@ exports.trySolve = async (req, res, next) => {
           })
           .catch((e) => {
             console.log(e);
-            res.status(500).json({error: 'Try again'});
+            res.status(500).json({message: 'Try again'});
           })
         
       } else {
@@ -64,15 +64,17 @@ exports.trySolve = async (req, res, next) => {
     }
   ).catch((e) => {
     console.log(e);
-    res.status(500).json({});
+    res.status(500).json({
+      message: 'Server error'
+    });
   })
 }
 
 exports.takeHint = async (req, res, next) => {
-  const teamId = req.headers['x-hasura-user-id'];
+  const teamId = req.body['session_variables']['x-hasura-user-id'];
   if (!teamId) {
     res.status(403).json({
-      error: 'No user id supplied in headers'
+      message: 'No user id supplied in headers'
     });
   }
   Promise.all([
@@ -89,7 +91,7 @@ exports.takeHint = async (req, res, next) => {
     ([team, ciphers]) => {
       if (!team) {
         res.status(403).json({
-          error: 'Wrong user id'
+          message: 'Wrong user id'
         });
       }
       const currentCipherNumber = team['current_cipher_number'];
@@ -115,20 +117,22 @@ exports.takeHint = async (req, res, next) => {
           })
           .catch((e) => {
             console.log(e);
-            res.status(500).json({error: 'Try again'});
+            res.status(500).json({message: 'Try again'});
           })
       }})
     .catch((e) => {
       console.log(e);
-      res.status(500).json({});
+      res.status(500).json({
+        message: 'Server error'
+      });
     })
 }
 
 exports.takeSolution = async(req, res, next) => {
-  const teamId = req.headers['x-hasura-user-id'];
+  const teamId = req.body['session_variables']['x-hasura-user-id'];
   if (!teamId) {
     res.status(403).json({
-      error: 'No user id supplied in headers'
+      message: 'No user id supplied in headers'
     });
   }
   Promise.all([
@@ -145,14 +149,14 @@ exports.takeSolution = async(req, res, next) => {
     ([team, ciphers]) => {
       if (!team) {
         res.status(403).json({
-          error: 'Wrong user id'
+          message: 'Wrong user id'
         });
       }
       const currentCipherNumber = team['current_cipher_number'];
       const currentCipher = ciphers.find((cipher) => cipher['cipher_number'] === currentCipherNumber)
       if (new Date().valueOf() < Number(team['next_solution_time'])) {
         res.status(200).json({
-          error: 'Too early!'
+          message: 'Too early!'
         });
       } else {
         knex
@@ -171,20 +175,22 @@ exports.takeSolution = async(req, res, next) => {
           })
           .catch((e) => {
             console.log(e);
-            res.status(500).json({error: 'Try again'});
+            res.status(500).json({message: 'Try again'});
           })
       }})
     .catch((e) => {
       console.log(e);
-      res.status(500).json({});
+      res.status(500).json({
+        message: 'Server error'
+      });
     })
 }
 
 exports.arrive = async (req, res, next) => {
-  const teamId = req.headers['x-hasura-user-id'];
+  const teamId = req.body['session_variables']['x-hasura-user-id'];
   if (!teamId) {
     res.status(403).json({
-      error: 'No user id supplied in headers'
+      message: 'No user id supplied in headers'
     });
   }
   Promise.all([
@@ -201,7 +207,7 @@ exports.arrive = async (req, res, next) => {
     ([team, ciphers]) => {
       if (!team) {
         res.status(403).json({
-          error: 'Wrong user id'
+          message: 'Wrong user id'
         });
       }
       if (!team['next_cipher_coordinates']) {
@@ -232,12 +238,14 @@ exports.arrive = async (req, res, next) => {
         })
         .catch((e) => {
           console.log(e);
-          res.status(500).json({error: 'Try again'});
+          res.status(500).json({message: 'Try again'});
         })
       })
     .catch((e) => {
       console.log(e);
-      res.status(500).json({});
+      res.status(500).json({
+        message: 'Server error'
+      });
     })
 }
 
