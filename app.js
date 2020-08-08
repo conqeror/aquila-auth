@@ -12,7 +12,7 @@ const expressValidator = require('express-validator');
 /**
  * Load environment variables from .env file, where API keys and passwords are configured.
  */
-dotenv.load({ path: '.env.example' });
+dotenv.load({ path: '.env' });
 
 /**
  * Controllers (route handlers).
@@ -40,10 +40,24 @@ app.post('/login', userController.postLogin);
 app.post('/signup', userController.postSignup);
 app.post('/changePassword', userController.postChangePassword)
 app.get('/webhook', userController.getWebhook);
-app.post('/checker/trySolve', checkerController.trySolve);
-app.post('/checker/takeHint', checkerController.takeHint);
-app.post('/checker/takeSolution', checkerController.takeSolution);
-app.post('/checker/arrive', checkerController.arrive);
+app.post('/checker/trySolve', authorizationMiddleware, checkerController.trySolve);
+app.post('/checker/takeHint', authorizationMiddleware, checkerController.takeHint);
+app.post('/checker/takeSolution', authorizationMiddleware, checkerController.takeSolution);
+app.post('/checker/arrive', authorizationMiddleware, checkerController.arrive);
+
+// authorize action call
+function authorizationMiddleware(req, res, next){
+    if (correctSecretProvided(req)) next();
+    else res.sendStatus(403);
+}
+
+// check if the secret sent in the header equals to the secret stored as an env variable
+function correctSecretProvided(req) {
+    const requiredSecret = process.env.ACTION_SECRET_ENV;
+    const providedSecret = req.headers['action_secret'];
+    return requiredSecret == providedSecret;
+}
+
 
 /**
  * Start Express server.

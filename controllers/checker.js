@@ -1,9 +1,9 @@
 const Knex = require('knex');
 const {api_db} = require('../knexfile');
 
-console.log(api_db);
-
 const knex = Knex(api_db);
+
+const ACTION_SECRET = process.env.ACTION_SECRET
 
 exports.trySolve = async (req, res, next) => {
   const solution = req.body['input']['solution'];
@@ -25,7 +25,7 @@ exports.trySolve = async (req, res, next) => {
       .select("*"),
     knex.from('ciphers').select("*")
   ]).then(
-    ([team, ciphers]) => {
+    async ([team, ciphers]) => {
       if (!team) {
         res.status(403).json({
           message: 'Wrong user id'
@@ -34,6 +34,7 @@ exports.trySolve = async (req, res, next) => {
       const currentCipherNumber = team['current_cipher_number'];
       const currentCipher = ciphers.find((cipher) => cipher['cipher_number'] === currentCipherNumber)
       if (currentCipher['solution'] === solution) {
+        await knex('submits').insert({action: 'SOLVE', payload: solution, team_id: teamId})
         knex
           .from('teams_status')
           .where({
@@ -57,6 +58,7 @@ exports.trySolve = async (req, res, next) => {
           })
         
       } else {
+        await knex('submits').insert({action: 'BAD SOLUTION', payload: solution, team_id: teamId})
         res.status(200).json({
           error: "Wrong solution!",
         })
@@ -88,7 +90,7 @@ exports.takeHint = async (req, res, next) => {
       .select("*"),
     knex.from('ciphers').select("*")
   ]).then(
-    ([team, ciphers]) => {
+    async ([team, ciphers]) => {
       if (!team) {
         res.status(403).json({
           message: 'Wrong user id'
@@ -97,8 +99,9 @@ exports.takeHint = async (req, res, next) => {
       const currentCipherNumber = team['current_cipher_number'];
       const currentCipher = ciphers.find((cipher) => cipher['cipher_number'] === currentCipherNumber)
       if (new Date().valueOf() < Number(team['next_hint_time'])) {
+        await knex('submits').insert({action: 'HINT EARLY', team_id: teamId})
         res.status(200).json({
-          message: 'Too early!'
+          error: 'Too early!'
         });
       } else {
         knex
@@ -110,7 +113,8 @@ exports.takeHint = async (req, res, next) => {
             next_hint_time: null,
             hint_text: currentCipher['hint_text'],
           })
-          .then((result) => {
+          .then(async (result) => {
+            await knex('submits').insert({action: 'HINT', team_id: teamId})
             res.status(200).json({
               status: "OK",
             });
@@ -146,7 +150,7 @@ exports.takeSolution = async(req, res, next) => {
       .select("*"),
     knex.from('ciphers').select("*")
   ]).then(
-    ([team, ciphers]) => {
+    async ([team, ciphers]) => {
       if (!team) {
         res.status(403).json({
           message: 'Wrong user id'
@@ -155,8 +159,9 @@ exports.takeSolution = async(req, res, next) => {
       const currentCipherNumber = team['current_cipher_number'];
       const currentCipher = ciphers.find((cipher) => cipher['cipher_number'] === currentCipherNumber)
       if (new Date().valueOf() < Number(team['next_solution_time'])) {
+        await knex('submits').insert({action: 'SKIP EARLY', team_id: teamId})
         res.status(200).json({
-          message: 'Too early!'
+          error: 'Too early!'
         });
       } else {
         knex
@@ -168,7 +173,8 @@ exports.takeSolution = async(req, res, next) => {
             next_solution_time: null,
             solution_text: currentCipher['solution_text'],
           })
-          .then((result) => {
+          .then(async (result) => {
+            await knex('submits').insert({action: 'SKIP', team_id: teamId})
             res.status(200).json({
               status: "OK",
             });
@@ -197,6 +203,7 @@ exports.arrive = async (req, res, next) => {
     knex
       .from('teams')
       .join('teams_status', {'teams.id': 'teams_status.team_id'})
+      .join('routes', {'teams.route_id': 'routes.id'})
       .where({
         team_id: teamId,
       })
@@ -204,7 +211,7 @@ exports.arrive = async (req, res, next) => {
       .select("*"),
     knex.from('ciphers').select("*")
   ]).then(
-    ([team, ciphers]) => {
+    async ([team, ciphers]) => {
       if (!team) {
         res.status(403).json({
           message: 'Wrong user id'
@@ -225,13 +232,15 @@ exports.arrive = async (req, res, next) => {
         .update({
           current_cipher_number: nextCipher['cipher_number'],
           current_cipher_code: nextCipher['cipher_code'],
+          current_cipher_coordinates: team['places'][String(currentCipherNumber + 1)],
           next_cipher_coordinates: null,
           next_hint_time: new Date().valueOf() + nextCipher['hint_time']*60000,
           next_solution_time: new Date().valueOf() + nextCipher['solution_time']*60000,
           hint_text: null,
           solution_text: null,
         })
-        .then((result) => {
+        .then(async (result) => {
+          await knex('submits').insert({action: 'ARRIVE', team_id: teamId})
           res.status(200).json({
             status: "OK",
           });
