@@ -3,8 +3,6 @@ const {api_db} = require('../knexfile');
 
 const knex = Knex(api_db);
 
-const ACTION_SECRET = process.env.ACTION_SECRET
-
 exports.trySolve = async (req, res, next) => {
   const solution = req.body['input']['solution'];
   const teamId = req.body['session_variables']['x-hasura-user-id'];
@@ -232,7 +230,7 @@ exports.arrive = async (req, res, next) => {
         .update({
           current_cipher_number: nextCipher['cipher_number'],
           current_cipher_code: nextCipher['cipher_code'],
-          current_cipher_coordinates: team['places'][String(currentCipherNumber + 1)],
+          current_cipher_coordinates: team['next_cipher_coordinates'],
           next_cipher_coordinates: null,
           next_hint_time: new Date().valueOf() + nextCipher['hint_time']*60000,
           next_solution_time: new Date().valueOf() + nextCipher['solution_time']*60000,
