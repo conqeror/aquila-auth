@@ -217,12 +217,18 @@ exports.arrive = async (req, res, next) => {
         });
       }
       if (!team['next_cipher_coordinates']) {
-        res.status(200).json({
-          error: 'You need to solve cipher first! :)'
+        res.status(403).json({
+          message: 'You need to solve cipher first! :)'
         });
       }
+      const lastSolvedCipher = team['last_solved_cipher_number']
       const currentCipherNumber = team['current_cipher_number'];
       const nextCipher = ciphers.find((cipher) => cipher['cipher_number'] === currentCipherNumber + 1)
+      if (nextCipher['cipher_number'] > lastSolvedCipher + 1) {
+        res.status(403).json({
+          message: 'You need to solve cipher first! :)'
+        });
+      }
       knex
         .from('teams_status')
         .where({
