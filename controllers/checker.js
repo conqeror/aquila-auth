@@ -34,7 +34,7 @@ exports.trySolve = async (req, res, next) => {
       const currentCipherNumber = team['current_cipher_number'];
       const currentCipher = ciphers.find((cipher) => cipher['cipher_number'] === currentCipherNumber)
       if (currentCipher['solution'] === solution) {
-        await knex('submits').insert({action: 'SOLVE', payload: solution, team_id: teamId})
+        await knex('submits').insert({action: 'SOLVE', payload: solution, team_id: teamId, cipher_number: currentCipherNumber})
         knex
           .from('teams_status')
           .where({
@@ -58,7 +58,7 @@ exports.trySolve = async (req, res, next) => {
           })
         
       } else {
-        await knex('submits').insert({action: 'BAD SOLUTION', payload: solution, team_id: teamId})
+        await knex('submits').insert({action: 'BAD SOLUTION', payload: solution, team_id: teamId, cipher_number: currentCipherNumber})
         res.status(200).json({
           error: "Wrong solution!",
         })
@@ -99,7 +99,7 @@ exports.takeHint = async (req, res, next) => {
       const currentCipherNumber = team['current_cipher_number'];
       const currentCipher = ciphers.find((cipher) => cipher['cipher_number'] === currentCipherNumber)
       if (new Date().valueOf() < Number(team['next_hint_time'])) {
-        await knex('submits').insert({action: 'HINT EARLY', team_id: teamId})
+        await knex('submits').insert({action: 'HINT EARLY', team_id: teamId, cipher_number: currentCipherNumber})
         res.status(200).json({
           error: 'Too early!'
         });
@@ -114,7 +114,7 @@ exports.takeHint = async (req, res, next) => {
             hint_text: currentCipher['hint_text'],
           })
           .then(async (result) => {
-            await knex('submits').insert({action: 'HINT', team_id: teamId})
+            await knex('submits').insert({action: 'HINT', team_id: teamId, cipher_number: currentCipherNumber})
             res.status(200).json({
               status: "OK",
             });
@@ -159,7 +159,7 @@ exports.takeSolution = async(req, res, next) => {
       const currentCipherNumber = team['current_cipher_number'];
       const currentCipher = ciphers.find((cipher) => cipher['cipher_number'] === currentCipherNumber)
       if (new Date().valueOf() < Number(team['next_solution_time'])) {
-        await knex('submits').insert({action: 'SKIP EARLY', team_id: teamId})
+        await knex('submits').insert({action: 'SKIP EARLY', team_id: teamId, cipher_number: currentCipherNumber})
         res.status(200).json({
           error: 'Too early!'
         });
@@ -174,7 +174,7 @@ exports.takeSolution = async(req, res, next) => {
             solution_text: currentCipher['solution_text'],
           })
           .then(async (result) => {
-            await knex('submits').insert({action: 'SKIP', team_id: teamId})
+            await knex('submits').insert({action: 'SKIP', team_id: teamId, cipher_number: currentCipherNumber})
             res.status(200).json({
               status: "OK",
             });
@@ -240,7 +240,7 @@ exports.arrive = async (req, res, next) => {
           solution_text: null,
         })
         .then(async (result) => {
-          await knex('submits').insert({action: 'ARRIVE', team_id: teamId})
+          await knex('submits').insert({action: 'ARRIVE', team_id: teamId, cipher_number: currentCipherNumber + 1})
           res.status(200).json({
             status: "OK",
           });
