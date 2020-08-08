@@ -44,6 +44,7 @@ exports.trySolve = async (req, res, next) => {
             next_solution_time: null,
             hint_text: null,
             solution_text: null,
+            last_solved_cipher_number: currentCipherNumber
           })
           .then((result) => {
             res.status(200).json({
